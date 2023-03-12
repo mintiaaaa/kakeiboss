@@ -1,1 +1,80 @@
-nul not found
+version: '3'
+services:
+  mysql:
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: database_dev
+      MYSQL_USER: database_dev_user
+      MYSQL_PASSWORD: database_dev_pass
+      TZ: 'Asia/Tokyo'
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - docker-db:/var/lib/mysql
+      - ./.docker/mysql/conf/my.cnf:/etc/mysql/conf.d/my.cnf
+    ports:
+      - "3306:3306"
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=password
+    links:
+      - mysql
+    ports:
+      - "8080:80"
+    volumes:
+      - ./.docker/phpmyadmin/sessions:/sessions
+  nginx:
+    build: .docker/nginx/.
+    volumes:
+      - ./public:/var/www/html/public
+    ports:
+      - "443:443"
+    links:
+      - app
+  app:
+    build:
+      context: .docker/php-fpm/.
+      args:
+        UID: ${UID:-1000}
+    volumes:
+      - ./:/var/www/html
+    links:
+      - mysql
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      DB_HOST: mysql
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+    volumes:
+      - minio:/minio
+    environment:
+      MINIO_ACCESS_KEY: minio_access_key
+      MINIO_SECRET_KEY: minio_secret_key
+    command: [server, /minio]
+  aws-cli:
+    image: aws-s3/aws-cli
+    build: .docker/aws-cli/.
+    tty: true
+    environment:
+      AWS_ACCESS_KEY_ID: minio_access_key
+      AWS_SECRET_ACCESS_KEY: minio_secret_key
+      AWS_DEFAULT_REGION: ap-northeast-1
+      AWS_DEFAULT_OUTPUT: json
+  mail:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025"
+
+volumes:
+  docker-db:
+    driver: local
+  minio:
+    driver: local
