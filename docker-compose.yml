@@ -77,4 +77,8 @@ volumes:
   docker-db:
     driver: local
   minio:
+<<<<<<< HEAD
     driver: local
+=======
+    driver: local
+>>>>>>> afc63d1c93cafcd35f7fbc83f1414aada24b36d8

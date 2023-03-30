@@ -20,7 +20,7 @@ Route::get('/', [App\Http\Controllers\BlogController::class, 'showList'])->name(
 Route::get('/blog/create', [App\Http\Controllers\BlogController::class, 'showCreate'])->name('create');
 
 // ブログ登録
-Route::post('/blog/store', [App\Http\Controllers\BlogController::class, 'showCreate'])->name('exeStore');
+Route::post('/blog/store', [App\Http\Controllers\BlogController::class, 'showCreate'])->name('exestore');
 
 // ブログ一覧詳細画面を表示
 Route::get('/blog/{id}', [App\Http\Controllers\BlogController::class, 'showDetail'])->name('show');
